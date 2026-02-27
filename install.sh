@@ -100,7 +100,7 @@ if [ ! -f "$RC_FILE" ]; then
     touch "$RC_FILE"
 fi
 
-AUTOALIAS_PATH="$SCRIPT_DIR/autoalias"
+AUTOALIAS_PATH="$SCRIPT_DIR"
 
 if ! grep -Fq "$AUTOALIAS_PATH" "$RC_FILE"; then
     {
@@ -128,7 +128,6 @@ fi
 chmod +x "$SCRIPT_DIR/autoalias.py"
 
 # Make symlink
-
 ln -s autoalias.py autoalias
 
 echo ""
