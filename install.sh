@@ -101,7 +101,7 @@ if [ ! -f "$RC_FILE" ]; then
 fi
 
 # Add PATH export
-PATH_LINE="export PATH=\"\$PATH:$SCRIPT_DIR/autoalias"
+PATH_LINE="export PATH=\"\$PATH:$SCRIPT_DIR/autoalias""
 if ! grep -Fq "$PATH_LINE" "$RC_FILE"; then
     echo "" >> "$RC_FILE"
     echo "# autoalias PATH" >> "$RC_FILE"
@@ -125,6 +125,10 @@ fi
 # Make autoalias.py executable
 chmod +x "$SCRIPT_DIR/autoalias.py"
 
+# Make symlink
+
+ln -s autoalias.py autoalias
+
 echo ""
 echo -e "${GREEN}Installation complete!${NC}"
 echo ""
@@ -137,5 +141,7 @@ echo ""
 echo "Configuration:"
 echo "  - Config: $CONFIG_FILE"
 echo -e "  - Edit threshold, mode confirm/auto, and other settings "
+
+
 
 

@@ -19,7 +19,7 @@ $ git status
 ## Installation
 
 ```bash
-./autoalias.py install
+python3 autoalias.py install
 ```
 
 This will:
