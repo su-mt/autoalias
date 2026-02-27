@@ -100,12 +100,14 @@ if [ ! -f "$RC_FILE" ]; then
     touch "$RC_FILE"
 fi
 
-# Add PATH export
-PATH_LINE="export PATH=\"\$PATH:$SCRIPT_DIR/autoalias""
-if ! grep -Fq "$PATH_LINE" "$RC_FILE"; then
-    echo "" >> "$RC_FILE"
-    echo "# autoalias PATH" >> "$RC_FILE"
-    echo "$PATH_LINE" >> "$RC_FILE"
+AUTOALIAS_PATH="$SCRIPT_DIR/autoalias"
+
+if ! grep -Fq "$AUTOALIAS_PATH" "$RC_FILE"; then
+    {
+        echo ""
+        echo "# autoalias PATH"
+        echo "export PATH=\"\$PATH:$AUTOALIAS_PATH\""
+    } >> "$RC_FILE"
     echo -e "${GREEN}✓${NC} Added autoalias to PATH"
 else
     echo -e "${YELLOW}✓${NC} autoalias already in PATH"
