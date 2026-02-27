@@ -101,7 +101,7 @@ if [ ! -f "$RC_FILE" ]; then
 fi
 
 # Add PATH export
-PATH_LINE="export PATH=\"\$PATH:$SCRIPT_DIR\""
+PATH_LINE="export PATH=\"\$PATH:$SCRIPT_DIR/autoalias"
 if ! grep -Fq "$PATH_LINE" "$RC_FILE"; then
     echo "" >> "$RC_FILE"
     echo "# autoalias PATH" >> "$RC_FILE"
@@ -130,11 +130,12 @@ echo -e "${GREEN}Installation complete!${NC}"
 echo ""
 echo "To start using autoalias:"
 echo "  1. Restart your terminal or run: source $RC_FILE"
-echo "  2. Use 'autoalias stats' to see statistics"
-echo "  3. Use 'autoalias list' to see created aliases"
-echo "  4. Use 'autoalias stop' to disable temporarily"
+echo "  2. Use autoalias stats to see statistics"
+echo "  3. Use autoalias list to see created aliases"
+echo "  4. Use autoalias stop to disable temporarily"
 echo ""
 echo "Configuration:"
 echo "  - Config: $CONFIG_FILE"
-echo "  - Edit threshold, mode (confirm/auto), and other settings"
-echo ""
+echo -e "  - Edit threshold, mode confirm/auto, and other settings "
+
+

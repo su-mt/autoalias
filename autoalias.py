@@ -110,15 +110,8 @@ class AliasManager:
             return
         
         stats = ConfigManager.get_stats()
-        ignore = ConfigManager.get_ignore()
         
-        # Check ignore list
-        if wrong_cmd in ignore.get("ignore_aliases", []):
-            return
-        if correct_cmd in ignore.get("ignore_commands", []):
-            return
-        
-        # Update stats
+        # Update stats (always, even if ignored)
         if wrong_cmd not in stats:
             stats[wrong_cmd] = {}
         
@@ -133,6 +126,13 @@ class AliasManager:
         threshold = config.get("threshold", 3)
         
         if count >= threshold:
+            # Check ignore list before creating alias
+            ignore = ConfigManager.get_ignore()
+            if wrong_cmd in ignore.get("ignore_aliases", []):
+                return
+            if correct_cmd in ignore.get("ignore_commands", []):
+                return
+            
             AliasManager.handle_alias_creation(wrong_cmd, correct_cmd, count)
     
     @staticmethod
@@ -142,16 +142,25 @@ class AliasManager:
         mode = config.get("mode", "confirm")
         
         if mode == "confirm":
-            # Ask user for confirmation
-            response = input(f"\n⚠ Suggestion: create alias '{alias}' → '{command}' (used {count} times)\nCreate this alias? [y/n]: ")
-            if response.lower() != 'y':
-                # Add to ignore list
-                ignore = ConfigManager.get_ignore()
-                if alias not in ignore["ignore_aliases"]:
-                    ignore["ignore_aliases"].append(alias)
-                    ConfigManager.save_ignore(ignore)
-                print(f"Alias '{alias}' added to ignore list")
-                return
+            # Ask user for confirmation using /dev/tty
+            try:
+                print(f"\n⚠ Suggestion: create alias '{alias}' → '{command}' (used {count} times)")
+                with open('/dev/tty', 'r') as tty:
+                    sys.stdout.write("Create this alias? [y/n]: ")
+                    sys.stdout.flush()
+                    response = tty.readline().strip()
+                
+                if response.lower() != 'y':
+                    # Add to ignore list
+                    ignore = ConfigManager.get_ignore()
+                    if alias not in ignore["ignore_aliases"]:
+                        ignore["ignore_aliases"].append(alias)
+                        ConfigManager.save_ignore(ignore)
+                    print(f"Alias '{alias}' added to ignore list")
+                    return
+            except (IOError, OSError):
+                # If can't read from tty, default to auto mode
+                pass
         
         # Create alias
         AliasManager.create_alias(alias, command)

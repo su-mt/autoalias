@@ -2,6 +2,7 @@
 
 # Variable to store last command that failed with "command not found"
 _autoalias_last_error=""
+_autoalias_last_exit_code=0
 
 # Hook for command not found
 command_not_found_handle() {
@@ -17,8 +18,8 @@ command_not_found_handle() {
 _autoalias_prompt_command() {
     local exit_code=$?
     
-    # If previous command succeeded (exit code 0) and we had a recent error
-    if [[ $exit_code -eq 0 && -n "$_autoalias_last_error" ]]; then
+    # If we have a stored error and the last command succeeded
+    if [[ -n "$_autoalias_last_error" && $exit_code -eq 0 ]]; then
         # Get the last executed command from history
         local last_cmd=$(history 1 | sed 's/^[ ]*[0-9]*[ ]*//')
         
@@ -29,9 +30,6 @@ _autoalias_prompt_command() {
         autoalias record "$_autoalias_last_error" "$cmd_name" 2>/dev/null
         
         # Clear the error
-        _autoalias_last_error=""
-    elif [[ $exit_code -ne 0 ]]; then
-        # Command failed, clear any stored error
         _autoalias_last_error=""
     fi
 }

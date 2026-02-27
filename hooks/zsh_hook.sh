@@ -1,12 +1,13 @@
 # autoalias zsh hook
 
-# Variable to store last command that failed with "command not found"
-_autoalias_last_error=""
+# Temp file to store last error (persists between command executions)
+_AUTOALIAS_ERROR_FILE="/tmp/autoalias_error_$$"
 
 # Hook for command not found
 command_not_found_handler() {
     local cmd="$1"
-    _autoalias_last_error="$cmd"
+    # Save error to file so it persists
+    echo "$cmd" > "$_AUTOALIAS_ERROR_FILE"
     
     # Still show the error message
     echo "zsh: command not found: $cmd" >&2
@@ -15,31 +16,30 @@ command_not_found_handler() {
 
 # Hook that runs before each command
 autoalias_preexec() {
-    # This runs before command execution
-    # We'll check if command succeeds in precmd
+    # Store the command that's about to be executed
+    _autoalias_current_cmd="$1"
 }
 
 # Hook that runs after each command
 autoalias_precmd() {
     local exit_code=$?
     
-    # If previous command succeeded (exit code 0) and we had a recent error
-    if [[ $exit_code -eq 0 && -n "$_autoalias_last_error" ]]; then
-        # Get the last executed command from history
-        local last_cmd=$(fc -ln -1 | sed 's/^[[:space:]]*//')
+    # Check if there was a recent error
+    if [[ -f "$_AUTOALIAS_ERROR_FILE" && -n "$_autoalias_current_cmd" && $exit_code -eq 0 ]]; then
+        local last_error=$(cat "$_AUTOALIAS_ERROR_FILE")
         
         # Extract just the command name (first word)
-        local cmd_name=$(echo "$last_cmd" | awk '{print $1}')
+        local cmd_name=$(echo "$_autoalias_current_cmd" | awk '{print $1}')
         
         # Record the correction
-        autoalias record "$_autoalias_last_error" "$cmd_name" 2>/dev/null
+        autoalias record "$last_error" "$cmd_name" 2>/dev/null
         
-        # Clear the error
-        _autoalias_last_error=""
-    elif [[ $exit_code -ne 0 ]]; then
-        # Command failed, clear any stored error
-        _autoalias_last_error=""
+        # Clear the error file
+        rm -f "$_AUTOALIAS_ERROR_FILE"
     fi
+    
+    # Clear current command
+    _autoalias_current_cmd=""
 }
 
 # Add hooks to zsh
