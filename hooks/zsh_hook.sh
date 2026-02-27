@@ -3,6 +3,29 @@
 # Temp file to store last error (persists between command executions)
 _AUTOALIAS_ERROR_FILE="/tmp/autoalias_error_$$"
 
+# Wrapper function for autoalias command
+autoalias() {
+    local autoalias_bin=$(which autoalias.py 2>/dev/null || echo "autoalias.py")
+    
+    # If it's a remove command, handle specially
+    if [[ "$1" == "remove" && -n "$2" ]]; then
+        local alias_name="$2"
+        # Call the actual autoalias command
+        "$autoalias_bin" remove "$alias_name"
+        local exit_code=$?
+        
+        # If successful, unalias in current shell and reload
+        if [[ $exit_code -eq 0 ]]; then
+            unalias "$alias_name" 2>/dev/null
+            source ~/.autoalias/aliases.sh 2>/dev/null
+        fi
+        return $exit_code
+    else
+        # For all other commands, just call autoalias normally
+        "$autoalias_bin" "$@"
+    fi
+}
+
 # Hook for command not found
 command_not_found_handler() {
     local cmd="$1"
@@ -32,7 +55,7 @@ autoalias_precmd() {
         local cmd_name=$(echo "$_autoalias_current_cmd" | awk '{print $1}')
         
         # Record the correction
-        autoalias record "$last_error" "$cmd_name" 2>/dev/null
+        command autoalias record "$last_error" "$cmd_name" 2>/dev/null
         
         # Clear the error file
         rm -f "$_AUTOALIAS_ERROR_FILE"

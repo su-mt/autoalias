@@ -328,6 +328,8 @@ def cmd_remove(args):
     """Remove an alias"""
     if AliasManager.remove_alias(args.alias):
         print(f"✓ Removed alias: {args.alias}")
+        print("Please run: source ~/.autoalias/aliases.sh")
+        print("Or restart your terminal to apply changes")
     else:
         print(f"Alias '{args.alias}' not found")
 
